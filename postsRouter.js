@@ -87,14 +87,30 @@ router.get('/:id', (req, res) => {
 // GET	/api/posts/:id/comments	Returns an array of all the comment objects associated with the post with the specified id.
 //findPostComments(): the findPostComments accepts a postId as its first parameter and returns a promise that resolves to an array of all comments on the post associated with the post id.
 router.get('/:id/comments', (req, res) => {
-    db.findPostComments(req.params.id)
-        .then(comments => {
-            if (comments.length === 0) {
+    db.findById(req.params.id)
+        .then(post => {
+            if (post.length === 0) {
                 res.status(404).json({
                     message: "The post with the specified ID does not exist."
                 })
             } else {
-                res.status(200).json(comments)
+                db.findPostComments(req.params.id)
+                    .then(comments => {
+                        if (comments.length === 0) {
+                            res.status(404).json({
+                                message: "There are no comments for this post."
+                            })
+                        } else {
+                            res.status(200).json(comments)
+                        }
+                    })
+                    .catch(error => {
+                        // log error to database
+                        console.log(error);
+                        res.status(500).json({
+                            error: "The post information could not be retrieved."
+                        });
+                    });
             }
         })
         .catch(error => {
@@ -107,6 +123,9 @@ router.get('/:id/comments', (req, res) => {
 })
 
 // DELETE	/api/posts/:id	Removes the post with the specified id and returns the deleted post object. You may need to make additional calls to the database in order to satisfy this requirement.
+// remove(): the remove method accepts an id as its first parameter and upon successfully deleting the post from the database it returns a promise that resolves to the number of records deleted.
+
+
 
 // PUT	/api/posts/:id	Updates the post with the specified id using data from the request body. Returns the modified document, NOT the original.
 
