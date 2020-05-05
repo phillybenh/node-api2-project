@@ -6,15 +6,15 @@ const db = require('./data/db.js');
 router.post('/', (req, res) => {
     if (typeof req.body.title === 'string' && typeof req.body.contents === 'string') {
 
-    db.insert(req.body)
-        .then(post => {
-            res.status(201).json(post)
-        })
-        .catch(error => {
-            res.status(500).json({
-                error: "There was an error while saving the post to the database"
+        db.insert(req.body)
+            .then(post => {
+                res.status(201).json(post)
             })
-        })
+            .catch(error => {
+                res.status(500).json({
+                    error: "There was an error while saving the post to the database"
+                })
+            })
     } else {
         res.status(400).json({
             errorMessage: "Please provide title and contents for the post."
@@ -23,6 +23,31 @@ router.post('/', (req, res) => {
 })
 
 // POST	/api/posts/:id/comments	Creates a comment for the post with the specified id using information sent inside of the request body.
+router.post('/:id/comments', (req, res) => {
+    if (res) {
+        if (req.body.text && typeof req.body.text === 'string') {
+            db.insertComment(req.body)
+                .then(comment => {
+                    res.status(201).json(comment)
+                })
+                .catch(error => {
+                    res.status(404).json({
+                        message: "The post with the specified ID does not exist."
+                    })
+                })
+        } else {
+            res.status(400).json({
+                errorMessage: "Please provide text for the comment."
+            })
+        }
+    } else {
+        res.status(500).json({
+            error: "There was an error while saving the comment to the database"
+        })
+    }
+})
+
+
 
 // GET	/api/posts	Returns an array of all the post objects contained in the database.
 router.get('/', (req, res) => {
