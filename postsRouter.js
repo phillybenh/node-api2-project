@@ -25,7 +25,7 @@ router.post('/', (req, res) => {
 // POST	/api/posts/:id/comments	Creates a comment for the post with the specified id using information sent inside of the request body.
 router.post('/:id/comments', (req, res) => {
     if (res) {
-        if (req.body.text && typeof req.body.text === 'string') {
+        if (typeof req.body.text === 'string' && req.body.text.length !== 0) {
             db.insertComment(req.body)
                 .then(comment => {
                     res.status(201).json(comment)
@@ -47,8 +47,6 @@ router.post('/:id/comments', (req, res) => {
     }
 })
 
-
-
 // GET	/api/posts	Returns an array of all the post objects contained in the database.
 router.get('/', (req, res) => {
     db.find()
@@ -65,6 +63,26 @@ router.get('/', (req, res) => {
 });
 
 // GET	/api/posts/:id	Returns the post object with the specified id.
+//findById(): this method expects an id as it's only parameter and returns a promise that resolves to the post corresponding to the id provided or an empty array if no post with that id is found.
+router.get('/:id', (req, res) => {
+    db.findById(req.params.id)
+        .then(post => {
+            if (post.length === 0) {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist."
+                })
+            } else {
+                res.status(200).json(post)
+            }
+        })
+        .catch(error => {
+            // log error to database
+            console.log(error);
+            res.status(500).json({
+                error: "The post information could not be retrieved."
+            });
+        });
+})
 
 // GET	/api/posts/:id/comments	Returns an array of all the comment objects associated with the post with the specified id.
 
